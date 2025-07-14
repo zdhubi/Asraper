@@ -263,7 +263,7 @@ def upload_to_upgates(file_path):
         ftp.login(user='project_connections_23436', passwd='5dqjqfuu')
 
         with open(file_path, 'rb') as f:
-            ftp.storbinary('STOR export.xml', f)
+            ftp.storbinary('STOR export1.xml', f)
 
         ftp.quit()
         safe_print("[OK] export1.xml byl nahrán na FTP.")
