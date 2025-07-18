@@ -129,6 +129,8 @@ def parse_product_page(url):
         return None
 
 category_urls = [
+
+    
     "https://www.aunika.com/Autohifi/1DIN-autoradia",
     "https://www.aunika.com/Multimedia/AV-jednotky",
     "https://www.aunika.com/Multimedia/Moduly-Apple-CarPlay-Android-Auto",
@@ -147,6 +149,7 @@ category_urls = [
     "https://www.aunika.com/Hands-free-sady-GSM-prislusenstvi/Nabijecky-pro-mobilni-telefony/USB-nabijecky-do-CL-zasuvky",
     "https://www.aunika.com/Hands-free-sady-GSM-prislusenstvi/Inbay-bezdratove-nabijeni",
     "https://www.aunika.com/Elektronicke-systemy-do-automobilu/Tempomaty"
+
 ]
 
 vsechny_produkty = []
@@ -241,7 +244,7 @@ with open("export1.xml", "w", encoding="utf-8") as f:
     f.write(doc.toprettyxml(indent="  ", encoding="utf-8").decode("utf-8"))
 
 # 📊 CSV export
-with open("export1.csv", "w", newline="", encoding="utf-8") as csvfile:
+with open("export.csv", "w", newline="", encoding="utf-8") as csvfile:
     fieldnames = ['url', 'objednaci_cislo', 'nazev', 'vyrobce', 'cena_bez_dph', 'dostupnost']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
     writer.writeheader()
@@ -263,7 +266,7 @@ def upload_to_upgates(file_path):
         ftp.login(user='project_connections_23436', passwd='5dqjqfuu')
 
         with open(file_path, 'rb') as f:
-            ftp.storbinary('STOR export1.xml', f)
+            ftp.storbinary('STOR export.xml', f)
 
         ftp.quit()
         safe_print("[OK] export1.xml byl nahrán na FTP.")
