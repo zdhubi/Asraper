@@ -1,12 +1,15 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 import time
 
 def get_product_links_selenium(category_url, timeout=30):
+    chrome_path = "/usr/bin/chromium"
+    chromedriver_path = "/usr/bin/chromedriver"
+
     options = Options()
+    options.binary_location = chrome_path
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
@@ -15,17 +18,16 @@ def get_product_links_selenium(category_url, timeout=30):
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument("--disable-extensions")
     options.add_argument("--log-level=3")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122 Safari/537.36")
+    options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/122 Safari/537.36")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    service = Service(executable_path=chromedriver_path)
+    driver = webdriver.Chrome(service=service, options=options)
+
     driver.set_page_load_timeout(timeout)
-
     driver.get(category_url)
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
-    # 🍪 Cookies
+    # 🍪 Cookies lišta
     try:
         cookie_button = driver.find_element(By.CSS_SELECTOR, ".cookie-accept-button")
         driver.execute_script("arguments[0].click();", cookie_button)
@@ -34,22 +36,20 @@ def get_product_links_selenium(category_url, timeout=30):
     except Exception:
         pass
 
-    # 🔄 Scroll dolů opakovaně pro vykreslení tlačítka
+    # 🔽 Scrollování pro vykreslení tlačítka
     found_button = False
-    for i in range(10):
+    for _ in range(10):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(1.5)
-
-        # 🧲 Hledání tlačítka „Načíst vše“ podle textu
         try:
-            candidates = driver.find_elements(By.XPATH, "//*[contains(text(), 'Načíst vše')]")
-            for el in candidates:
-                if el.is_displayed() and el.tag_name.lower() in ['button', 'div', 'span']:
-                    driver.execute_script("arguments[0].scrollIntoView();", el)
-                    driver.execute_script("arguments[0].click();", el)
-                    print("[INFO] Tlačítko 'Načíst vše' úspěšně kliknuto.")
+            buttons = driver.find_elements(By.XPATH, "//*[contains(text(), 'Načíst vše')]")
+            for btn in buttons:
+                if btn.is_displayed():
+                    driver.execute_script("arguments[0].scrollIntoView();", btn)
+                    driver.execute_script("arguments[0].click();", btn)
                     time.sleep(4)
                     found_button = True
+                    print("[INFO] Tlačítko 'Načíst vše' úspěšně kliknuto.")
                     break
             if found_button:
                 break
@@ -59,7 +59,7 @@ def get_product_links_selenium(category_url, timeout=30):
     if not found_button:
         print("[WARNING] Tlačítko 'Načíst vše' nebylo nalezeno ani po scrollování.")
 
-    # 🕵️‍♂️ Načtení odkazů
+    # 🔗 Načtení produktových odkazů
     links = []
     elements = driver.find_elements(By.CSS_SELECTOR, "a.item_link, div.item a[href*='/']")
     for el in elements:
