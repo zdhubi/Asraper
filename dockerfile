@@ -1,13 +1,12 @@
-FROM python:3.9-slim
 
-# Nastavení pracovní složky
+FROM python:3.9.18-slim
+
 WORKDIR /app
 
-# Instalace systémových knihoven a Chromium + ChromeDriver
 RUN apt-get update && apt-get install -y \
     curl \
-    gnupg \
     unzip \
+    gnupg \
     wget \
     fonts-liberation \
     libasound2 \
@@ -26,17 +25,13 @@ RUN apt-get update && apt-get install -y \
     chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
-# 📌 Zajištění cesty k Chromium a Chromedriver
+ENV PATH="/usr/bin:$PATH"
 ENV CHROME_BIN=/usr/bin/chromium
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
-ENV PATH="/usr/bin:$PATH"
 
-# Instalace Python knihoven
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 📦 Kopírování tvého kódu
 COPY . .
 
-# 🔧 Spuštění skriptu
 CMD ["python", "main.py"]
