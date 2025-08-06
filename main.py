@@ -1,3 +1,4 @@
+
 import re
 import csv
 import os
@@ -156,6 +157,11 @@ vsechny_produkty = []
 for k in category_urls:
     try:
         urls = get_product_links_selenium(k)
+        if not urls:
+            safe_print(f"[WARNING] Žádné odkazy pro kategorii: {k}")
+            if log:
+                log.write(f"[WARNING] Žádné odkazy pro kategorii: {k}\n")
+            continue
         safe_print(f"[INFO] Nalezeno {len(urls)} produktů z kategorie: {k}")
         if log:
             log.write(f"[INFO] {len(urls)} produktů z kategorie: {k}\n")
@@ -164,6 +170,7 @@ for k in category_urls:
         safe_print(f"[ERROR] Selhalo načítání kategorie {k} -> {e}")
         if log:
             log.write(f"[ERROR] Kategorie selhala: {k} -> {e}\n")
+
 
 parsed_products = []
 with ThreadPoolExecutor(max_workers=8) as executor:
@@ -240,7 +247,7 @@ for data in parsed_products:
         product.appendChild(c('STOCK', stock_val, cdata=True))
 
 # 💾 Zápis XML
-with open("export1.xml", "w", encoding="utf-8") as f:
+with open("export.xml", "w", encoding="utf-8") as f:
     f.write(doc.toprettyxml(indent="  ", encoding="utf-8").decode("utf-8"))
 
 # 📊 CSV export
@@ -269,15 +276,15 @@ def upload_to_upgates(file_path):
             ftp.storbinary('STOR export.xml', f)
 
         ftp.quit()
-        safe_print("[OK] export1.xml byl nahrán na FTP.")
+        safe_print("[OK] export.xml byl nahrán na FTP.")
         if log:
-            log.write("[OK] export1.xml byl nahrán na FTP.\n")
+            log.write("[OK] export.xml byl nahrán na FTP.\n")
     except Exception as e:
         safe_print(f"[ERROR] FTP upload selhal: {e}")
         if log:
             log.write(f"[ERROR] FTP upload selhal: {e}\n")
 
-upload_to_upgates("export1.xml")
+upload_to_upgates("export.xml")
 
 if log:
     log.write(f"[{datetime.now().strftime('%d.%m.%Y %H:%M:%S,%f')[:-3]}] Hotovo.\n\n")
